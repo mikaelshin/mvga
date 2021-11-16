@@ -1,0 +1,6 @@
+(Gaussiana)    passo 1: localizar a coluna mais a esquerda que não seja constituída inteiramente por 0
+(Gaussiana)    passo 2: trocar uma linha por outra, caso a primeira coluna da primeira linha seja 0
+(Gaussiana)    passo 3: pegar o valor da primeira coluna e primeira linha 'a' e multiplicar toda a linha por 1/a => pivô
+(Gaussiana)    passo 4: multiplicar e somar a primeira linha pra transformar em 0 as demais linhas
+(Gaussiana)    passo 5: ignorar a primeira linha e aplicar o passo 1 para a segunda linha (forma escolanada por linhas / Eliminação Gaussiana)
+(Gauss-Jordan) passo 6: multiplicar e somar a última linha não nula pra transformar em 0 as demais linhas superiores (forma escolanada reduzida por linhas / Elimanação de Gauss-Jordan)
