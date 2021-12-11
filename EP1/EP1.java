@@ -83,6 +83,12 @@ class Matriz {
 		return m[i][j];
 	}
 
+	public double[][] getMatriz() {
+
+		return m;
+	}
+
+
 	// metodo que imprime as entradas da matriz.
 
 	public void imprime(){
@@ -343,18 +349,16 @@ class Matriz {
 
 public class EP1 {
 
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	public static void main(String [] args){
-		
+	
 		InformacaoDeEntrada resultado = constroiMatriz();
 		Matriz matriz = resultado.getMatriz();
 		String operacao = resultado.getOperacao();
 
 		if("resolve".equals(operacao)){
 
-			int linhaMenor = retornaLinhaMenor(matriz, 0);
-			
-			Sistema sistema = validaOperacaoResolve(matriz, linhaMenor);
+			Sistema sistema = validaOperacaoResolve(matriz);
 
 			if (sistema == Sistema.Valido) {
 				
@@ -422,7 +426,7 @@ public class EP1 {
 
 			int lin = 0;
 
-			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada1D.txt"))) {
+			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada4C.txt"))) {
 
 				String line = br.readLine();
 				
@@ -514,11 +518,9 @@ public class EP1 {
 		return linhaMaior;
 	}
 
-	public static Sistema validaOperacaoResolve(Matriz matriz, int linhaMenorPrimeiraColuna) {
+	public static Sistema validaOperacaoResolve(Matriz matriz) {
 
 		boolean restoDivisoesIguaisAZero = true;
-		boolean restoDivisoesIguais = true;
-		int contadorCondicaoRestoZero = 0;
 		
 		for (int contCol = 0; contCol < matriz.getCol(); contCol++) {
 
@@ -533,7 +535,6 @@ public class EP1 {
 			}
 
 			if (colunasIguaisAZero) {
-
 
 				for (int col = 0; col < matriz.getCol(); col++) {
 					
@@ -561,56 +562,45 @@ public class EP1 {
 			}
 		}
 
-		for (int contLin = 0; contLin < matriz.getLin(); contLin++) {
-			
-			if (contLin == linhaMenorPrimeiraColuna)
-				continue;
+		for (double[] linha : matriz.getMatriz()) {
 
-			double[] restoDivisoes = {0, 0, 0, 0, 0, 0, 0};
+			double[] v1 = linha;
 
-			for (int contCol = 0; contCol < matriz.getCol(); contCol++) {
-				
-				restoDivisoes[contCol] = matriz.get(contLin, contCol) / matriz.get(linhaMenorPrimeiraColuna, contCol);
+			for (double[] outraLinha : matriz.getMatriz()) {
 
-				if (matriz.get(contLin, contCol) % matriz.get(linhaMenorPrimeiraColuna, contCol) == 0) {
+				if (linha == outraLinha) continue;
 
-					contadorCondicaoRestoZero++; 
+				double[] v2 = outraLinha;
 
-					if (contadorCondicaoRestoZero == matriz.getCol() && contCol == matriz.getCol() - 1) {
-						
-						for (int i = 0; i < matriz.getCol() - 1; i++) {
+				Sistema sistema = comparaVetor(v1, v2);
 
-							if(restoDivisoes[i] != restoDivisoes[i + 1]) 
-								restoDivisoesIguais = false;
-							
-							i++;
-						}
-						if (restoDivisoesIguais) return Sistema.MuitasSolucoes;
-					}
-					
-				}	
-				else {
+				if (sistema == Sistema.MuitasSolucoes)
+					return Sistema.MuitasSolucoes;
 
-					if (contadorCondicaoRestoZero == matriz.getCol() - 1 && contCol == matriz.getCol() - 1) {
-						
-						for (int i = 0; i < matriz.getCol() - 2; i++) {
-
-							if(restoDivisoes[i] != restoDivisoes[i + 1]) 
-								restoDivisoesIguais = false;
-							
-							i++;
-						}
-
-						if (restoDivisoesIguais) return Sistema.Invalido;
-					}
-				}
-			}
+				else if (sistema == Sistema.Invalido)
+					return Sistema.Invalido;
+			}	
 		}
 		return Sistema.Valido;
 	}
 
-	public static void rearranjaMatriz(Matriz matriz) {
+	public static Sistema comparaVetor(double[] v1, double[] v2) {
 
+		double[] maior = (v1[0] >= v2[0]) ? v1 : v2;
+		double[] menor = (v1[0] < v2[0]) ? v1 : v2;
+		int fator = (int) (maior[0] / menor[0]);
+
+		for (int i = 0; i < maior.length - 1; i++)
+			if (!((maior[i] == menor[i] || maior[i] % menor[i] == 0) && maior[i] / menor[i] == fator))
+				if (maior[i] != 0 && menor[i] != 0)
+					return null;
+			
+		if (maior[maior.length - 1] == menor[menor.length - 1] || maior[menor.length - 1] % menor[menor.length - 1] == 0 && maior[menor.length - 1] / menor[menor.length - 1] == fator) 
+			return Sistema.MuitasSolucoes;
+		return Sistema.Invalido;
+	}
+
+	public static void rearranjaMatriz(Matriz matriz) {
 
 		for (int cont = 1; cont < matriz.getLin(); cont++) {
 			
