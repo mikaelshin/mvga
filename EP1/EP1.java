@@ -1,7 +1,37 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
-	
+
+// enum que classifica o sistema (estritamente necessário para a operação 'resolve')
+
+enum Sistema {
+
+	Valido,
+	MuitasSolucoes,
+	Invalido
+}
+
+// classe que será objeto de retorno para o método constroiMatriz(...), devolvendo a matriz e sua operação
+
+final class InformacaoDeEntrada {
+
+    private final Matriz matriz;
+    private final String operacao;
+
+    public InformacaoDeEntrada(Matriz matriz, String operacao) {
+        this.matriz = matriz;
+        this.operacao = operacao;
+    }
+
+    public Matriz getMatriz() {
+        return matriz;
+    }
+
+    public String getOperacao() {
+        return operacao;
+    }
+}
+
 // classe que representa uma matriz de valores do tipo double.
 
 class Matriz {
@@ -93,12 +123,16 @@ class Matriz {
 		}
 	}
 	
+	public void imprimeSaida(Matriz agregada) {
+
+		for(int cont = 0; cont < agregada.getLin(); cont++) 
+			System.out.println(agregada.get(cont, agregada.getCol() - 1));
+	}	
+
 	// metodo que troca as linhas i1 e i2 de lugar.
 
 	public void trocaLinha(int i1, int i2){
 		
-		// TODO: implementar este metodo.
-
 		double[] aux = new double[getCol()];
 
 		for (int i = 0; i < this.getCol(); i++){
@@ -110,13 +144,12 @@ class Matriz {
 
 	// metodo que multiplica as entradas da linha i pelo escalar k
 
-	public void multiplicaLinha(int i, double k){
+	private void multiplicaLinha(int i, double k){
 		
-		// TODO: implementar este metodo.
-
-		for (int cont = i; cont < this.getCol(); cont++)
+		for (int cont = i; cont < this.getCol(); cont++) {
+			
 			this.m[i][cont] = this.m[i][cont] * k;
-		
+		}
 	}
 
 	// metodo que faz a seguinte combinacao de duas linhas da matriz:
@@ -124,9 +157,7 @@ class Matriz {
 	// 	(linha i1) = (linha i1) + (linha i2 * k)
 	//
 
-	public void combinaLinhas(int i1, int i2, double k){
-
-		// TODO: implementar este metodo.
+	private void combinaLinhas(int i1, int i2, double k){
 
 		for (int cont = 0; cont < this.getCol(); cont++)
 			this.m[i1][cont] = this.m[i1][cont] + (this.m[i2][cont] * k);
@@ -139,7 +170,7 @@ class Matriz {
 	// Este metodo ja esta pronto para voces usarem na implementacao da eliminacao gaussiana
 	// e eleminacao de Gauss-Jordan.
 
-	public int [] encontraLinhaPivo(int ini){
+	private int [] encontraLinhaPivo(int ini){
 
 		int pivo_col, pivo_lin;
 
@@ -167,32 +198,106 @@ class Matriz {
 	// tambem devem ser aplicadas na matriz "agregada" caso esta seja nao nula. Este metodo 
 	// tambem deve calcular e devolver o determinante da matriz que invoca o metodo. Assumimos 
 	// que a matriz que invoca este metodo eh uma matriz quadrada.
-
+	
 	public double formaEscalonada(Matriz agregada){
 
-		// TODO: implementar este metodo.
-		
-		int linhaAtual = 1;
-		int colunaAtual = 0;
-		int nWhile = 1;
+		// cálculo de determinante
+		double resultadoDet = 0;
 
-		while (agregada.get(getLin() - 1, getCol() - 3) != 0 || (agregada.get(getLin() - 1, getCol() - 3) < 0 && agregada.get(getLin() - 1, getCol() - 3) > SMALL)) {
+		if (agregada != null) {
 
-			for(int cont = linhaAtual; cont < this.getLin(); cont++){	
-				double pivot = agregada.get(colunaAtual, colunaAtual);
-				double k = agregada.get(cont, colunaAtual) * -pivot; 
-				agregada.combinaLinhas(cont, colunaAtual, k); 
+			// eliminação gaussiana
+			// passo 1: localizar a coluna mais a esquerda que não seja constituída inteiramente por 0
+			int[] pivo = agregada.encontraLinhaPivo(0);
+
+			// passo 2: trocar uma linha por outra, caso a primeira coluna da primeira linha seja 0
+			if(pivo[0] != 0)
+				agregada.trocaLinha(0, pivo[0]);
+
+			// passo 3: pegar o valor da primeira coluna e primeira linha 'a' e multiplicar toda a linha por 1/a => pivô
+			if (agregada.get(0, 0) != 0){
+				agregada.multiplicaLinha(0, 1/agregada.get(0, 0));
 			}
-			colunaAtual++;
-			linhaAtual = nWhile + 1;
-		}
+
+			int linhaAtual = 1;
+			int colunaAtual = 0;
+			int nWhile = 1;
+
+			try {
+				
+				while (agregada.get(agregada.getLin() - 1, agregada.getCol() - 2) != 0 
+					|| (agregada.get(agregada.getLin() - 1, agregada.getCol() - 2) < 0 
+					&& agregada.get(agregada.getLin() - 1, agregada.getCol() - 2) > SMALL)) {
+
+					for(int cont = linhaAtual; cont < this.getLin(); cont++){
+
+						double pivot = agregada.get(colunaAtual, colunaAtual);
+						double k = agregada.get(cont, colunaAtual) * -pivot; 
+						agregada.combinaLinhas(cont, colunaAtual, k); 
+					}
+					colunaAtual++;
+					linhaAtual = nWhile++;
+				}
+				
+				System.out.println("\n----------- Forma Escalonada por Linha ----------- \n");
+				agregada.imprime();
 		
-		System.out.println("\n----------- Forma Escalonada por Linha ----------- \n");
-		agregada.imprime();
+				formaEscalonadaReduzida(agregada);
+			}
+			catch (Exception e) {
+				// System.out.println("Nao foi possivel realizar a operacao.");
+				e.printStackTrace();
+			}
+		}
 
-		formaEscalonadaReduzida(agregada);
+		else {
+			
+			resultadoDet = calculaDeterminante(this.m, this.m.length);
+		}
 
-		return 0.0;
+		return resultadoDet;
+	}
+
+	// método recursivo que calcula determinante da matriz em qualquer ordem
+	public double calculaDeterminante(double[][] matriz, int iterador) {
+
+		double resultadoDet = 0;
+		double matrizTemp[][] = new double[iterador][iterador];
+
+		if (iterador == 1) {
+
+			resultadoDet = matriz[0][0];
+
+		} else if (iterador == 2) {
+
+			resultadoDet = matriz[0][0] * matriz[1][1] - matriz[0][1] * matriz[1][0];
+		
+		} else {
+
+			for (int cont = 0; cont < iterador; cont++)
+            {
+				int lin = 0; 
+				int col = 0;
+
+				for (int contLin = 1; contLin < iterador; contLin++) {
+
+              	  	for (int contCol = 0; contCol < iterador; contCol++) {
+					
+						if (cont == contCol) continue;
+
+						matrizTemp[lin][col] = matriz[contLin][contCol];
+						col++;
+
+						if (col == iterador - 1) {
+							lin++;
+							col = 0;
+						}
+                    }
+              	}
+            	resultadoDet = resultadoDet + (matriz[0][cont] * Math.pow(-1, cont) * calculaDeterminante(matrizTemp, iterador - 1));
+            }
+		}
+		return resultadoDet;
 	}
 
 	// metodo que implementa a eliminacao de Gauss-Jordan, que coloca a matriz (que chama o metodo)
@@ -209,9 +314,11 @@ class Matriz {
 		int colunaAtual = getCol() - 2;
 		int nWhile = getLin() - 1;
 
-		for (int cont = 0; cont < getLin(); cont++)
-			multiplicaLinha(cont, 1 / agregada.get(cont, cont));
+		for (int cont = 1; cont < getLin(); cont++)
+			if (agregada.get(cont, cont) != 0)
+				agregada.multiplicaLinha(cont, 1 / agregada.get(cont, cont));
 
+		
 		while (agregada.get(0, 1) != 0 || (agregada.get(0, 1) < 0 && agregada.get(0, 1) > SMALL)) {
 
 			for (int cont = linhaAtual - 1; cont >= 0; cont--) {
@@ -222,119 +329,297 @@ class Matriz {
 			}
 			colunaAtual--;
 			linhaAtual = nWhile - 1;
-		}
-		
+		}	
+
 		System.out.println("\n----------- Forma Escalonada Reduzida ----------- \n");
 
 		agregada.imprime();
+
+		System.out.println("\n----------- Matriz Inversa ----------- \n");
 	}
 }
 
+
+
 public class EP1 {
 
+	public static final boolean DEBUG = true;
 	public static void main(String [] args){
 		
-		// try (BufferedReader br = new BufferedReader(new FileReader("entrada.txt"))) {
-
-		// 	StringBuilder sb = new StringBuilder();
-		// 	String line = br.readLine();
-		
-		// 	// while (line != null) {
-		// 	// 	sb.append(line);
-		// 	// 	sb.append(System.lineSeparator());
-		// 	// 	line = br.readLine();
-		// 	// }
-		// 	String operacao = sb.append(line).toString();
-		// 	// String operacao = sb.append(System.lineSeparator()).toString();
-		// 	line = br.readLine();
-			
-		// 	String n = sb.append(line).toString();
-		// 	// String n = sb.append(System.lineSeparator()).toString();
-		// 	line = br.readLine();
-
-		// 	// String everything = sb.toString();
-		// 	System.out.println(operacao);
-		// 	System.out.println(n);
-		// } 
-		// catch (Exception e) {
-		// 	System.out.println(e);			
-		// }
-		
-		
-		Scanner in = new Scanner(System.in);	// Scanner para facilitar a leitura de dados a partir da entrada padrao.
-		String operacao = in.next();		// le, usando o scanner, a string que determina qual operacao deve ser realizada.
-		int n = in.nextInt();			// le a dimensão da matriz a ser manipulada pela operacao escolhida.
-		
-		// TODO: completar este metodo.
+		InformacaoDeEntrada resultado = constroiMatriz();
+		Matriz matriz = resultado.getMatriz();
+		String operacao = resultado.getOperacao();
 
 		if("resolve".equals(operacao)){
 
-			Matriz matriz = constroiMatriz(in, n, "resolve");
-
-			// passo 1: localizar a coluna mais a esquerda que não seja constituída inteiramente por 0
-			int[] pivo = matriz.encontraLinhaPivo(0);
-
-			// passo 2: trocar uma linha por outra, caso a primeira coluna da primeira linha seja 0
-			if(pivo[0] != 0)
-				matriz.trocaLinha(0, pivo[0]);
-
-			// passo 3: pegar o valor da primeira coluna e primeira linha 'a' e multiplicar toda a linha por 1/a => pivô
-			matriz.multiplicaLinha(0, 1/matriz.get(0, 0));
-
-			// passo 4: multiplicar e somar a primeira linha pra transformar em 0 as demais linhas
+			int linhaMenor = retornaLinhaMenor(matriz, 0);
 			
+			Sistema sistema = validaOperacaoResolve(matriz, linhaMenor);
 
-			// passo 5: ignorar a primeira linha e aplicar o passo 1 para a segunda linha 
-			// (forma escolanada por linhas / Eliminação Gaussiana)
-			matriz.formaEscalonada(matriz);
+			if (sistema == Sistema.Valido) {
+				
+				rearranjaMatriz(matriz);
 
-			// passo 6: multiplicar e somar a última linha não nula pra transformar em 0 as demais linhas superiores 
-			// (forma escolanada reduzida por linhas / Elimanação de Gauss-Jordan)
+				// reconstrução da matriz 'resolve', terá 'n' linhas e 'n' colunas, e criando a sua agregada  
+				Matriz matrizResolve = reconstroiMatrizResolve(matriz);
+				Matriz agregada = constroiAgregadaMatrizResolve(matriz);
 
-			// passo 7: imprimir saída
-			for(int cont = 0; cont < matriz.getLin(); cont++) 
-				System.out.println(matriz.get(cont, matriz.getCol() - 1));
-
-		}
-		else if("inverte".equals(operacao)){
-
-			Matriz matriz = constroiMatriz(in, n, "inverte");
-
-		}
-		else if("determinante".equals(operacao)){
+				matrizResolve.formaEscalonada(agregada);
+				matriz.imprimeSaida(matriz);
+			} 
 			
-			Matriz matriz = constroiMatriz(in, n, "determinante");
-
+			else if (sistema == Sistema.Invalido) 
+				System.out.println("sistema sem solução");
+			
+			else if (sistema == Sistema.MuitasSolucoes) 
+				System.out.println("sistema possui diversas soluções");
+			
 		}
+		
+		else if("inverte".equals(operacao)) {
+
+			matriz.formaEscalonada(Matriz.identidade(matriz.getLin()));
+		}
+
+		else if("determinante".equals(operacao))			
+			System.out.printf("%.2f ", (matriz.formaEscalonada(null)));
+
 		else {
 			System.out.println("Operação desconhecida!");
 			System.exit(1);
 		}
-
-		in.close();
 	}
 
-	public static Matriz constroiMatriz(Scanner in, int n, String operacao) {
+	public static InformacaoDeEntrada constroiMatriz() {
 
-		Matriz matriz = (operacao == "resolve") ? new Matriz(n, n + 1) : new Matriz(n, n);
+		if (DEBUG) { 
 
-		in.nextLine();
+			Scanner in = new Scanner(System.in);	
+			String operacao = in.next();
+			int n = in.nextInt();
 
-		for (int i = 0; i < n; i++) {
+			// inicialmente, matriz 'resolve' terá 'n' linhas e 'n + 1' colunas.  
+			Matriz matriz = ("resolve".equals(operacao)) ? new Matriz(n, n + 1) : new Matriz(n, n);
 
-			String numeros = in.nextLine();
-			String[] numero = numeros.split("\\s+"); 
+			in.nextLine();
 
-			for (int j = 0; j < numero.length; j++)
-				matriz.set(i, j, Double.parseDouble(numero[j]));
+			for (int i = 0; i < n; i++) {
+
+				String numeros = in.nextLine().trim();
+				String[] numero = numeros.split("\\s+"); 
+
+				for (int j = 0; j < numero.length; j++)
+					matriz.set(i, j, Double.parseDouble(numero[j]));
+			}
+
+			matriz.imprime();
+			
+			in.close();
+		
+			return new InformacaoDeEntrada(matriz, operacao);
+
+		} else {
+
+			int lin = 0;
+
+			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada1D.txt"))) {
+
+				String line = br.readLine();
+				
+				String operacao = line;
+				line = br.readLine();
+				
+				int n = Integer.parseInt(line);
+
+				Matriz matriz = ("resolve".equals(operacao)) ? new Matriz(n, n + 1) : new Matriz(n, n);
+
+				while ((line = br.readLine()) != null && !line.isEmpty()) {
+
+					String numeros = line.trim();
+					String[] numero = numeros.split("\\s+"); 
+
+					for (int col = 0; col < numero.length; col++)
+						matriz.set(lin, col, Double.parseDouble(numero[col]));
+
+					lin++;
+				}
+				
+				matriz.imprime();
+
+				return new InformacaoDeEntrada(matriz, operacao);
+			} 
+			catch (Exception e) {
+
+				e.printStackTrace();	
+				return null;		
+			}
+		}			
+	}
+
+	public static Matriz reconstroiMatrizResolve(Matriz matriz) {
+
+		Matriz matrizResolve = new Matriz(matriz.getLin(), matriz.getLin());
+
+		for (int i = 0; i < matriz.getLin(); i++) 
+			for (int j = 0; j < matriz.getLin(); j++) 
+				matrizResolve.set(i, j, matriz.get(i, j));
+		
+		matrizResolve.imprime();
+			
+		return matrizResolve;
+	}	
+
+	public static Matriz constroiAgregadaMatrizResolve(Matriz matriz) {
+
+		Matriz matrizAgregada = new Matriz(matriz.getLin(), 1);
+
+		for (int i = 0; i < matriz.getLin(); i++) 
+			matrizAgregada.set(i, 0, matriz.get(i, matriz.getCol() - 1));
+
+		matrizAgregada.imprime();
+		return matrizAgregada;
+	}
+
+	public static int retornaLinhaMenor(Matriz matriz, int coluna) {
+
+		int linhaMenor = 0;
+		double colunaMenorTemp = 2147483647;
+
+		for (int cont = 0; cont < matriz.getLin(); cont++) {
+
+			if (matriz.get(cont, coluna) < colunaMenorTemp && matriz.get(cont, coluna) != 0) {
+
+				linhaMenor = cont;
+				colunaMenorTemp = matriz.get(cont, coluna);
+			}
 		}
 
-		in.nextLine();
-		
-		matriz.imprime();
-	
-		return matriz;
+		return linhaMenor;
 	}
-	
+
+	public static int retornaLinhaMaior(Matriz matriz, int coluna) {
+
+		int linhaMaior = 0;
+		double colunaMenorTemp = -2147483647;
+
+		for (int cont = 0; cont < matriz.getLin(); cont++) {
+
+			if (matriz.get(cont, coluna) > colunaMenorTemp && matriz.get(cont, coluna) != 0) {
+
+				linhaMaior = cont;
+				colunaMenorTemp = matriz.get(cont, coluna);
+			}
+		}
+
+		return linhaMaior;
+	}
+
+	public static Sistema validaOperacaoResolve(Matriz matriz, int linhaMenorPrimeiraColuna) {
+
+		boolean restoDivisoesIguaisAZero = true;
+		boolean restoDivisoesIguais = true;
+		int contadorCondicaoRestoZero = 0;
+		
+		for (int contCol = 0; contCol < matriz.getCol(); contCol++) {
+
+			boolean colunasIguaisAZero = true;
+			
+			for (int contLin = 0; contLin < matriz.getLin(); contLin++) {
+
+				if (matriz.get(contLin, contCol) != 0) {
+					colunasIguaisAZero = false;
+					break;
+				}
+			}
+
+			if (colunasIguaisAZero) {
+
+
+				for (int col = 0; col < matriz.getCol(); col++) {
+					
+					int linMenor = retornaLinhaMenor(matriz, col);
+
+					if (col == linMenor || col == contCol)
+						continue;
+					
+					for (int lin = 0; lin < matriz.getLin(); lin++) {
+						
+						if (lin == linMenor)
+							continue;
+
+						if (matriz.get(lin, col) % matriz.get(linMenor, col) != 0) {
+							restoDivisoesIguaisAZero = false;
+							break;
+						}
+					}
+					
+				}
+				if (restoDivisoesIguaisAZero)
+					return Sistema.MuitasSolucoes;
+				else
+					return Sistema.Invalido;
+			}
+		}
+
+		for (int contLin = 0; contLin < matriz.getLin(); contLin++) {
+			
+			if (contLin == linhaMenorPrimeiraColuna)
+				continue;
+
+			double[] restoDivisoes = {0, 0, 0, 0, 0, 0, 0};
+
+			for (int contCol = 0; contCol < matriz.getCol(); contCol++) {
+				
+				restoDivisoes[contCol] = matriz.get(contLin, contCol) / matriz.get(linhaMenorPrimeiraColuna, contCol);
+
+				if (matriz.get(contLin, contCol) % matriz.get(linhaMenorPrimeiraColuna, contCol) == 0) {
+
+					contadorCondicaoRestoZero++; 
+
+					if (contadorCondicaoRestoZero == matriz.getCol() && contCol == matriz.getCol() - 1) {
+						
+						for (int i = 0; i < matriz.getCol() - 1; i++) {
+
+							if(restoDivisoes[i] != restoDivisoes[i + 1]) 
+								restoDivisoesIguais = false;
+							
+							i++;
+						}
+						if (restoDivisoesIguais) return Sistema.MuitasSolucoes;
+					}
+					
+				}	
+				else {
+
+					if (contadorCondicaoRestoZero == matriz.getCol() - 1 && contCol == matriz.getCol() - 1) {
+						
+						for (int i = 0; i < matriz.getCol() - 2; i++) {
+
+							if(restoDivisoes[i] != restoDivisoes[i + 1]) 
+								restoDivisoesIguais = false;
+							
+							i++;
+						}
+
+						if (restoDivisoesIguais) return Sistema.Invalido;
+					}
+				}
+			}
+		}
+		return Sistema.Valido;
+	}
+
+	public static void rearranjaMatriz(Matriz matriz) {
+
+
+		for (int cont = 1; cont < matriz.getLin(); cont++) {
+			
+			if (matriz.get(cont, cont) == 0) {
+				
+				int	linhaMaior = retornaLinhaMaior(matriz, cont);
+				matriz.trocaLinha(cont, linhaMaior);
+			}
+		}
+	}
 }
 
