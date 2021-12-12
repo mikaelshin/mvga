@@ -2,7 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
 
-// enum que classifica o sistema (estritamente necessário para a operação 'resolve')
+// enum que classifica o sistema (necessário somente para a operação 'resolve')
 
 enum Sistema {
 
@@ -13,12 +13,12 @@ enum Sistema {
 
 // classe que será objeto de retorno para o método constroiMatriz(...), devolvendo a matriz e sua operação
 
-final class InformacaoDeEntrada {
+final class InformacaoDaEntrada {
 
     private final Matriz matriz;
     private final String operacao;
 
-    public InformacaoDeEntrada(Matriz matriz, String operacao) {
+    public InformacaoDaEntrada(Matriz matriz, String operacao) {
         this.matriz = matriz;
         this.operacao = operacao;
     }
@@ -62,7 +62,7 @@ class Matriz {
 		this.col = m;
 		this.m = new double[lin][col];
 	}
-
+	
 	public int getLin(){
 
 		return this.lin;
@@ -83,9 +83,24 @@ class Matriz {
 		return m[i][j];
 	}
 
+	public void setLinhaVetor(double[] vetor, int i) {
+
+		m[i] = vetor;
+	}
+
+	public double[] getLinhaVetor(int i) {
+
+		return m[i];
+	}
+
 	public double[][] getMatriz() {
 
 		return m;
+	}
+
+ 	public Matriz getMatrizObj() {
+
+		return this;
 	}
 
 
@@ -152,10 +167,12 @@ class Matriz {
 
 	private void multiplicaLinha(int i, double k){
 		
-		for (int cont = i; cont < this.getCol(); cont++) {
-			
-			this.m[i][cont] = this.m[i][cont] * k;
-		}
+		if (this.getCol() == 1) 
+			this.m[i][0] = this.m[i][0] * k;	
+		
+		else 
+			for (int cont = i; cont < this.getCol(); cont++) 	
+				this.m[i][cont] = this.m[i][cont] * k;
 	}
 
 	// metodo que faz a seguinte combinacao de duas linhas da matriz:
@@ -167,7 +184,6 @@ class Matriz {
 
 		for (int cont = 0; cont < this.getCol(); cont++)
 			this.m[i1][cont] = this.m[i1][cont] + (this.m[i2][cont] * k);
-		
 	}
 
 	// metodo que procura, a partir da linha ini, a linha com uma entrada nao nula que
@@ -199,72 +215,8 @@ class Matriz {
 		return new int [] { pivo_lin, pivo_col };
 	}
 
-	// metodo que implementa a eliminacao gaussiana, que coloca a matriz (que chama o metodo)
-	// na forma escalonada. As operacoes realizadas para colocar a matriz na forma escalonada 
-	// tambem devem ser aplicadas na matriz "agregada" caso esta seja nao nula. Este metodo 
-	// tambem deve calcular e devolver o determinante da matriz que invoca o metodo. Assumimos 
-	// que a matriz que invoca este metodo eh uma matriz quadrada.
-	
-	public double formaEscalonada(Matriz agregada){
-
-		// cálculo de determinante
-		double resultadoDet = 0;
-
-		if (agregada != null) {
-
-			// eliminação gaussiana
-			// passo 1: localizar a coluna mais a esquerda que não seja constituída inteiramente por 0
-			int[] pivo = agregada.encontraLinhaPivo(0);
-
-			// passo 2: trocar uma linha por outra, caso a primeira coluna da primeira linha seja 0
-			if(pivo[0] != 0)
-				agregada.trocaLinha(0, pivo[0]);
-
-			// passo 3: pegar o valor da primeira coluna e primeira linha 'a' e multiplicar toda a linha por 1/a => pivô
-			if (agregada.get(0, 0) != 0){
-				agregada.multiplicaLinha(0, 1/agregada.get(0, 0));
-			}
-
-			int linhaAtual = 1;
-			int colunaAtual = 0;
-			int nWhile = 1;
-
-			try {
-				
-				while (agregada.get(agregada.getLin() - 1, agregada.getCol() - 2) != 0 
-					|| (agregada.get(agregada.getLin() - 1, agregada.getCol() - 2) < 0 
-					&& agregada.get(agregada.getLin() - 1, agregada.getCol() - 2) > SMALL)) {
-
-					for(int cont = linhaAtual; cont < this.getLin(); cont++){
-
-						double pivot = agregada.get(colunaAtual, colunaAtual);
-						double k = agregada.get(cont, colunaAtual) * -pivot; 
-						agregada.combinaLinhas(cont, colunaAtual, k); 
-					}
-					colunaAtual++;
-					linhaAtual = nWhile++;
-				}
-				
-				System.out.println("\n----------- Forma Escalonada por Linha ----------- \n");
-				agregada.imprime();
-		
-				formaEscalonadaReduzida(agregada);
-			}
-			catch (Exception e) {
-				// System.out.println("Nao foi possivel realizar a operacao.");
-				e.printStackTrace();
-			}
-		}
-
-		else {
-			
-			resultadoDet = calculaDeterminante(this.m, this.m.length);
-		}
-
-		return resultadoDet;
-	}
-
 	// método recursivo que calcula determinante da matriz em qualquer ordem
+
 	public double calculaDeterminante(double[][] matriz, int iterador) {
 
 		double resultadoDet = 0;
@@ -281,13 +233,13 @@ class Matriz {
 		} else {
 
 			for (int cont = 0; cont < iterador; cont++)
-            {
+			{
 				int lin = 0; 
 				int col = 0;
 
 				for (int contLin = 1; contLin < iterador; contLin++) {
 
-              	  	for (int contCol = 0; contCol < iterador; contCol++) {
+					for (int contCol = 0; contCol < iterador; contCol++) {
 					
 						if (cont == contCol) continue;
 
@@ -298,11 +250,68 @@ class Matriz {
 							lin++;
 							col = 0;
 						}
-                    }
-              	}
-            	resultadoDet = resultadoDet + (matriz[0][cont] * Math.pow(-1, cont) * calculaDeterminante(matrizTemp, iterador - 1));
-            }
+					}
+				}
+				resultadoDet = resultadoDet + (matriz[0][cont] * Math.pow(-1, cont) * calculaDeterminante(matrizTemp, iterador - 1));
+			}
 		}
+		return resultadoDet;
+	}
+
+	// metodo que implementa a eliminacao gaussiana, que coloca a matriz (que chama o metodo)
+	// na forma escalonada. As operacoes realizadas para colocar a matriz na forma escalonada 
+	// tambem devem ser aplicadas na matriz "agregada" caso esta seja nao nula. Este metodo 
+	// tambem deve calcular e devolver o determinante da matriz que invoca o metodo. Assumimos 
+	// que a matriz que invoca este metodo eh uma matriz quadrada.
+	
+	public double formaEscalonada(Matriz agregada){
+
+		double resultadoDet = 0;
+		boolean operacaoResolve = (agregada.getCol() == 1) ? true : false;
+
+		resultadoDet = calculaDeterminante(this.m, this.m.length);
+
+		if (operacaoResolve || (resultadoDet != 0 && agregada != null)) {
+
+			Matriz matriz = this.getMatrizObj();
+
+			try {
+
+				for (int p = 0; p < agregada.getLin(); p++) {
+
+					// find pivot row and swap
+					int max = p;
+
+					for (int i = p + 1; i < agregada.getLin(); i++)
+						if (Math.abs(matriz.get(i, p)) > Math.abs(matriz.get(max, p))) 
+							max = i;
+					
+					double[] linhaMatrizTemp = matriz.getLinhaVetor(p); 
+					matriz.setLinhaVetor(matriz.getLinhaVetor(max), p); 
+					matriz.setLinhaVetor(linhaMatrizTemp, max);
+					double t = agregada.get(p, 0); 
+					agregada.set(p, 0, agregada.get(max, 0));  
+					agregada.set(max, 0, t);
+
+					// pivot within A and b
+					for (int i = p + 1; i < agregada.getLin(); i++) {
+
+						double alpha = matriz.get(i, p) / matriz.get(p, p);
+						agregada.set(i, 0, agregada.get(i, 0) - alpha * agregada.get(p, 0)); 
+						for (int j = p; j < agregada.getLin(); j++) {
+							matriz.set(i, j, matriz.get(i, j) - alpha * matriz.get(p, j)); 
+						}
+					}
+				}
+
+				matriz.formaEscalonadaReduzida(agregada);
+
+			} catch (Exception e) {
+
+				e.getMessage();
+			}
+		}
+
 		return resultadoDet;
 	}
 
@@ -314,34 +323,21 @@ class Matriz {
 
 	public void formaEscalonadaReduzida(Matriz agregada){
 
-		// TODO: implementar este metodo.		
+		Matriz matriz = this.getMatrizObj();
 
-		int linhaAtual = getLin() - 1;
-		int colunaAtual = getCol() - 2;
-		int nWhile = getLin() - 1;
+		// back substitution
+		double[] x = new double[agregada.getLin()];
+		for (int i = agregada.getLin() - 1; i >= 0; i--) {
 
-		for (int cont = 1; cont < getLin(); cont++)
-			if (agregada.get(cont, cont) != 0)
-				agregada.multiplicaLinha(cont, 1 / agregada.get(cont, cont));
+			double soma = 0;
+			for (int j = i + 1; j < agregada.getLin(); j++) 
+				soma = soma + matriz.get(i, j) * x[j];
 
-		
-		while (agregada.get(0, 1) != 0 || (agregada.get(0, 1) < 0 && agregada.get(0, 1) > SMALL)) {
+			x[i] = (agregada.get(i, 0) - soma) / matriz.get(i, i);
+		}
 
-			for (int cont = linhaAtual - 1; cont >= 0; cont--) {
-
-				double pivot = agregada.get(linhaAtual, colunaAtual);
-				double k = agregada.get(cont, colunaAtual) * -pivot; 
-				agregada.combinaLinhas(cont, colunaAtual, k); 
-			}
-			colunaAtual--;
-			linhaAtual = nWhile - 1;
-		}	
-
-		System.out.println("\n----------- Forma Escalonada Reduzida ----------- \n");
-
-		agregada.imprime();
-
-		System.out.println("\n----------- Matriz Inversa ----------- \n");
+		for (double i : x)
+			System.out.printf("%.2f\n", i);
 	}
 }
 
@@ -352,11 +348,11 @@ public class EP1 {
 	public static final boolean DEBUG = false;
 	public static void main(String [] args){
 	
-		InformacaoDeEntrada resultado = constroiMatriz();
+		InformacaoDaEntrada resultado = constroiMatriz();
 		Matriz matriz = resultado.getMatriz();
 		String operacao = resultado.getOperacao();
 
-		if("resolve".equals(operacao)){
+		if ("resolve".equals(operacao)) {
 
 			Sistema sistema = validaOperacaoResolve(matriz);
 
@@ -369,7 +365,6 @@ public class EP1 {
 				Matriz agregada = constroiAgregadaMatrizResolve(matriz);
 
 				matrizResolve.formaEscalonada(agregada);
-				matriz.imprimeSaida(matriz);
 			} 
 			
 			else if (sistema == Sistema.Invalido) 
@@ -377,15 +372,17 @@ public class EP1 {
 			
 			else if (sistema == Sistema.MuitasSolucoes) 
 				System.out.println("sistema possui diversas soluções");
-			
 		}
 		
-		else if("inverte".equals(operacao)) {
+		else if ("inverte".equals(operacao)) {
 
-			matriz.formaEscalonada(Matriz.identidade(matriz.getLin()));
+			double resultadoDet = matriz.formaEscalonada(Matriz.identidade(matriz.getLin()));
+			
+			if (resultadoDet == 0)
+				System.out.println("matriz singular");
 		}
 
-		else if("determinante".equals(operacao))			
+		else if ("determinante".equals(operacao))			
 			System.out.printf("%.2f ", (matriz.formaEscalonada(null)));
 
 		else {
@@ -394,7 +391,7 @@ public class EP1 {
 		}
 	}
 
-	public static InformacaoDeEntrada constroiMatriz() {
+	public static InformacaoDaEntrada constroiMatriz() {
 
 		if (DEBUG) { 
 
@@ -416,17 +413,15 @@ public class EP1 {
 					matriz.set(i, j, Double.parseDouble(numero[j]));
 			}
 
-			matriz.imprime();
-			
 			in.close();
 		
-			return new InformacaoDeEntrada(matriz, operacao);
+			return new InformacaoDaEntrada(matriz, operacao);
 
 		} else {
 
 			int lin = 0;
 
-			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada4C.txt"))) {
+			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada4A.txt"))) {
 
 				String line = br.readLine();
 				
@@ -448,9 +443,7 @@ public class EP1 {
 					lin++;
 				}
 				
-				matriz.imprime();
-
-				return new InformacaoDeEntrada(matriz, operacao);
+				return new InformacaoDaEntrada(matriz, operacao);
 			} 
 			catch (Exception e) {
 
@@ -467,9 +460,7 @@ public class EP1 {
 		for (int i = 0; i < matriz.getLin(); i++) 
 			for (int j = 0; j < matriz.getLin(); j++) 
 				matrizResolve.set(i, j, matriz.get(i, j));
-		
-		matrizResolve.imprime();
-			
+		        
 		return matrizResolve;
 	}	
 
@@ -480,7 +471,6 @@ public class EP1 {
 		for (int i = 0; i < matriz.getLin(); i++) 
 			matrizAgregada.set(i, 0, matriz.get(i, matriz.getCol() - 1));
 
-		matrizAgregada.imprime();
 		return matrizAgregada;
 	}
 
@@ -592,11 +582,12 @@ public class EP1 {
 
 		for (int i = 0; i < maior.length - 1; i++)
 			if (!((maior[i] == menor[i] || maior[i] % menor[i] == 0) && maior[i] / menor[i] == fator))
-				if (maior[i] != 0 && menor[i] != 0)
+				if (maior[i] != 0 || menor[i] != 0)
 					return null;
 			
 		if (maior[maior.length - 1] == menor[menor.length - 1] || maior[menor.length - 1] % menor[menor.length - 1] == 0 && maior[menor.length - 1] / menor[menor.length - 1] == fator) 
 			return Sistema.MuitasSolucoes;
+
 		return Sistema.Invalido;
 	}
 
