@@ -143,12 +143,6 @@ class Matriz {
 			System.out.println();
 		}
 	}
-	
-	public void imprimeSaida(Matriz agregada) {
-
-		for(int cont = 0; cont < agregada.getLin(); cont++) 
-			System.out.println(agregada.get(cont, agregada.getCol() - 1));
-	}	
 
 	// metodo que troca as linhas i1 e i2 de lugar.
 
@@ -167,12 +161,8 @@ class Matriz {
 
 	private void multiplicaLinha(int i, double k){
 		
-		if (this.getCol() == 1) 
-			this.m[i][0] = this.m[i][0] * k;	
-		
-		else 
-			for (int cont = i; cont < this.getCol(); cont++) 	
-				this.m[i][cont] = this.m[i][cont] * k;
+		for (int cont = 0; cont < this.getCol(); cont++) 	
+			this.m[i][cont] = this.m[i][cont] * k;
 	}
 
 	// metodo que faz a seguinte combinacao de duas linhas da matriz:
@@ -180,9 +170,9 @@ class Matriz {
 	// 	(linha i1) = (linha i1) + (linha i2 * k)
 	//
 
-	private void combinaLinhas(int i1, int i2, double k){
+	private void combinaLinhas(int i1, int i2, double k, int col){
 
-		for (int cont = 0; cont < this.getCol(); cont++)
+		for (int cont = col; cont < this.getCol(); cont++)
 			this.m[i1][cont] = this.m[i1][cont] + (this.m[i2][cont] * k);
 	}
 
@@ -192,27 +182,15 @@ class Matriz {
 	// Este metodo ja esta pronto para voces usarem na implementacao da eliminacao gaussiana
 	// e eleminacao de Gauss-Jordan.
 
-	private int [] encontraLinhaPivo(int ini){
+	private int encontraLinhaPivo(int ini) {
 
-		int pivo_col, pivo_lin;
+		int pivo = ini;
 
-		pivo_lin = lin;
-		pivo_col = col;
-
-		for(int i = ini; i < lin; i++){
+		for (int i = ini + 1; i < getMatrizObj().getLin(); i++)
+			if (Math.abs(getMatrizObj().get(i, ini)) > Math.abs(getMatrizObj().get(pivo, ini))) 
+				pivo = i;
 		
-			int j;
-			
-			for(j = 0; j < col; j++) if(Math.abs(m[i][j]) > 0) break;
-
-			if(j < pivo_col) {
-
-				pivo_lin = i;
-				pivo_col = j;
-			}
-		}
-
-		return new int [] { pivo_lin, pivo_col };
+		return pivo;
 	}
 
 	// método recursivo que calcula determinante da matriz em qualquer ordem
@@ -267,7 +245,10 @@ class Matriz {
 	public double formaEscalonada(Matriz agregada){
 
 		double resultadoDet = 0;
-		boolean operacaoResolve = (agregada.getCol() == 1) ? true : false;
+		boolean operacaoResolve = false;
+
+		if (agregada != null)
+			operacaoResolve = (agregada.getCol() == 1) ? true : false;
 
 		resultadoDet = calculaDeterminante(this.m, this.m.length);
 
@@ -277,30 +258,18 @@ class Matriz {
 
 			try {
 
-				for (int p = 0; p < agregada.getLin(); p++) {
+				for (int cont = 0; cont < agregada.getLin(); cont++) {
 
-					// find pivot row and swap
-					int max = p;
-
-					for (int i = p + 1; i < agregada.getLin(); i++)
-						if (Math.abs(matriz.get(i, p)) > Math.abs(matriz.get(max, p))) 
-							max = i;
+					int pivo = matriz.encontraLinhaPivo(cont);
 					
-					double[] linhaMatrizTemp = matriz.getLinhaVetor(p); 
-					matriz.setLinhaVetor(matriz.getLinhaVetor(max), p); 
-					matriz.setLinhaVetor(linhaMatrizTemp, max);
-					double t = agregada.get(p, 0); 
-					agregada.set(p, 0, agregada.get(max, 0));  
-					agregada.set(max, 0, t);
+					agregada.trocaLinha(cont, pivo);
+					matriz.trocaLinha(cont, pivo);
 
-					// pivot within A and b
-					for (int i = p + 1; i < agregada.getLin(); i++) {
+					for (int i = cont + 1; i < agregada.getLin(); i++) {
 
-						double alpha = matriz.get(i, p) / matriz.get(p, p);
-						agregada.set(i, 0, agregada.get(i, 0) - alpha * agregada.get(p, 0)); 
-						for (int j = p; j < agregada.getLin(); j++) {
-							matriz.set(i, j, matriz.get(i, j) - alpha * matriz.get(p, j)); 
-						}
+						double constante = matriz.get(i, cont) / matriz.get(cont, cont);
+						agregada.combinaLinhas(i, cont, -constante, 0);
+						matriz.combinaLinhas(i, cont, -constante, cont);
 					}
 				}
 
@@ -308,7 +277,7 @@ class Matriz {
 
 			} catch (Exception e) {
 
-				e.getMessage();
+				e.printStackTrace();
 			}
 		}
 
@@ -324,20 +293,49 @@ class Matriz {
 	public void formaEscalonadaReduzida(Matriz agregada){
 
 		Matriz matriz = this.getMatrizObj();
+		boolean operacaoResolve = (agregada.getCol() == 1) ? true : false;
+		int lin = 0;
 
-		// back substitution
-		double[] x = new double[agregada.getLin()];
-		for (int i = agregada.getLin() - 1; i >= 0; i--) {
+		if (operacaoResolve) {
 
-			double soma = 0;
-			for (int j = i + 1; j < agregada.getLin(); j++) 
-				soma = soma + matriz.get(i, j) * x[j];
+			double[] agregadaTemp = new double[agregada.getLin()];
 
-			x[i] = (agregada.get(i, 0) - soma) / matriz.get(i, i);
+			for (int i = agregada.getLin() - 1; i >= 0; i--) {
+
+				double soma = 0;
+
+				for (int j = i + 1; j < agregada.getLin(); j++) 
+					soma = soma + matriz.get(i, j) * agregadaTemp[j];
+
+				agregadaTemp[i] = (agregada.get(i, 0) - soma) / matriz.get(i, i);
+			}
+
+			for (double linha : agregadaTemp) 
+				System.out.printf("%.2f\n", linha);
+				
+		} else {
+
+			double[][] agregadaInversaTemp = new double[agregada.getLin()][agregada.getCol()];
+
+			for (int i = agregada.getLin() - 1; i >= 0; i--) {
+			
+				for (int cont = agregada.getCol() - 1; cont >= 0; cont--) {
+	
+					double soma = 0;
+					
+					for (int j = i + 1; j < agregada.getLin(); j++) 
+						soma += matriz.get(i, j) * agregadaInversaTemp[j][cont];
+					
+					agregadaInversaTemp[i][cont] = (agregada.get(i, cont) - soma) / matriz.get(i, i);
+				}
+			}
+
+			for (double[] linha : agregadaInversaTemp) {
+				agregada.setLinhaVetor(linha, lin);
+				lin++;
+			}
+			agregada.imprime();
 		}
-
-		for (double i : x)
-			System.out.printf("%.2f\n", i);
 	}
 }
 
@@ -345,7 +343,8 @@ class Matriz {
 
 public class EP1 {
 
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = false; // um flag para o método constroiMatriz(), pois a execução no modo debug não estava lendo os arquivos 
+	
 	public static void main(String [] args){
 	
 		InformacaoDaEntrada resultado = constroiMatriz();
@@ -358,12 +357,9 @@ public class EP1 {
 
 			if (sistema == Sistema.Valido) {
 				
-				rearranjaMatriz(matriz);
-
 				// reconstrução da matriz 'resolve', terá 'n' linhas e 'n' colunas, e criando a sua agregada  
 				Matriz matrizResolve = reconstroiMatrizResolve(matriz);
 				Matriz agregada = constroiAgregadaMatrizResolve(matriz);
-
 				matrizResolve.formaEscalonada(agregada);
 			} 
 			
@@ -421,7 +417,7 @@ public class EP1 {
 
 			int lin = 0;
 
-			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada4A.txt"))) {
+			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada3E.txt"))) {
 
 				String line = br.readLine();
 				
@@ -442,7 +438,6 @@ public class EP1 {
 
 					lin++;
 				}
-				
 				return new InformacaoDaEntrada(matriz, operacao);
 			} 
 			catch (Exception e) {
@@ -487,25 +482,7 @@ public class EP1 {
 				colunaMenorTemp = matriz.get(cont, coluna);
 			}
 		}
-
 		return linhaMenor;
-	}
-
-	public static int retornaLinhaMaior(Matriz matriz, int coluna) {
-
-		int linhaMaior = 0;
-		double colunaMenorTemp = -2147483647;
-
-		for (int cont = 0; cont < matriz.getLin(); cont++) {
-
-			if (matriz.get(cont, coluna) > colunaMenorTemp && matriz.get(cont, coluna) != 0) {
-
-				linhaMaior = cont;
-				colunaMenorTemp = matriz.get(cont, coluna);
-			}
-		}
-
-		return linhaMaior;
 	}
 
 	public static Sistema validaOperacaoResolve(Matriz matriz) {
@@ -543,10 +520,10 @@ public class EP1 {
 							break;
 						}
 					}
-					
 				}
 				if (restoDivisoesIguaisAZero)
 					return Sistema.MuitasSolucoes;
+
 				else
 					return Sistema.Invalido;
 			}
@@ -591,16 +568,5 @@ public class EP1 {
 		return Sistema.Invalido;
 	}
 
-	public static void rearranjaMatriz(Matriz matriz) {
-
-		for (int cont = 1; cont < matriz.getLin(); cont++) {
-			
-			if (matriz.get(cont, cont) == 0) {
-				
-				int	linhaMaior = retornaLinhaMaior(matriz, cont);
-				matriz.trocaLinha(cont, linhaMaior);
-			}
-		}
-	}
 }
 

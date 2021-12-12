@@ -1,0 +1,105 @@
+resolve: 
+
+  - entrada1C 🆗
+        6
+        8
+
+  - entrada1D 🆗
+        sistema sem solução
+
+  - entrada1E 🆗
+        sistema possui diversas soluções
+
+  - entrada2A 🆗
+        1.00
+        3.00
+        2.00
+
+  - entrada2B 🆗
+        sistema possui diversas soluções
+    
+  - entrada2C 🆗
+        sistema sem solução
+
+  - entrada2D 🆗
+        sistema sem solução
+
+  - entrada2E 🆗
+        3.00
+        2.00
+        3.00
+
+  - entrada2F 🆗
+        3.00
+        2.00
+        3.00
+         
+  - entrada4A 🆗
+        3.69
+        0.10
+        2.64
+        -2.02
+        -5.33
+        -1.00
+        -1.42
+
+  - entrada4B 🆗
+        sistema sem solução
+
+  - entrada4C 🆗
+        sistema possui diversas soluções
+
+
+inverte: 
+
+  - entrada1B 🆗
+	  -0.50	   1.50	
+   	   1.00	  -2.00	
+	
+  - entrada1G 🆗
+        matriz singular
+
+  - entrada2G 🆗
+	   2.00	   0.00	  -1.00	
+  	   0.00	  -1.00	   1.00	
+	  -1.00	   2.00	  -1.00	
+
+  - entrada2K 🆗
+        matriz singular
+  
+  - entrada3A 🆗
+	   1.00	   0.00	   0.00	   0.00	   0.00	
+   	   0.00	   1.00	   0.00	   0.00	   0.00	
+   	   0.00	   0.00	   1.00	   0.00	   0.00	
+       0.00	   0.00	   0.00	   1.00	   0.00	
+   	   0.00	   0.00	   0.00	   0.00	   1.00	
+	
+  - entrada3F 🆗
+	  -0.88	   0.02	  -0.06	   0.07	   0.32	
+   	   0.10	   0.06	   0.08	  -0.05	  -0.04	
+   	   0.12	  -0.77	   0.57	   0.30	   0.01	
+  	   0.59	   0.43	  -0.30	  -0.24	  -0.12	
+  	  -0.13	   0.23	  -0.18	   0.05	   0.01	
+	
+  - entrada3G 🆗
+	   0.00	   0.00	   0.00	   1.00	   0.00	
+   	   0.14	   0.00	   0.00	  -0.14	   0.00	
+  	  -1.29	   1.00	   0.00	   0.29	   0.00	
+   	   3.71	  -3.00	   0.00	  -0.71	   1.00	
+ 	 -23.43	  19.00	   1.00	  -1.57	  -8.00	
+	
+  - entrada3H 🆗
+        matriz singular
+	
+
+determinante:
+
+  - entrada1A  -2 🆗
+  - entrada1F   0 🆗
+  - entrada2H  -1 🆗 
+  - entrada2I  84 🆗
+  - entrada2J   0 🆗
+  - entrada3B 824 🆗 
+  - entrada3C   7 🆗
+  - entrada3D   0 🆗
+  - entrada3E   1 🆗
