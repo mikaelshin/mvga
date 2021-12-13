@@ -345,7 +345,7 @@ class Matriz {
 public class EP1 {
 
 	// flag para o método constroiMatriz(), pois a execução no modo debug não estava lendo os arquivos (estou enviando com essa parte, caso queria debuggar)
-	public static final boolean DEBUG = false; 
+	public static final boolean DEBUG = true; 
 	
 	public static void main(String [] args) {
 	
@@ -419,7 +419,7 @@ public class EP1 {
 
 			int lin = 0;
 
-			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada1F.txt"))) {
+			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada1A.txt"))) {
 
 				String line = br.readLine();
 				
