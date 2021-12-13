@@ -1,3 +1,7 @@
+
+// Aluno:                n USP:
+// Mikael Gi Sung Shin   10843441
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
@@ -47,38 +51,38 @@ class Matriz {
 
 	// metodo estatico que cria uma matriz identidade de tamanho n x n.
 
-	public static Matriz identidade(int n){
+	public static Matriz identidade(int n) {
 
 		Matriz mat = new Matriz(n, n);
-		for(int i = 0; i < mat.lin; i++) mat.m[i][i] = 1;
+		for (int i = 0; i < mat.lin; i++) mat.m[i][i] = 1;
 		return mat;
 	}	
 
 	// construtor que cria uma matriz de n linhas por m colunas com todas as entradas iguais a zero.
 
-	public Matriz(int n, int m){
+	public Matriz(int n, int m) {
 
 		this.lin = n;
 		this.col = m;
 		this.m = new double[lin][col];
 	}
 	
-	public int getLin(){
+	public int getLin() {
 
 		return this.lin;
 	}
 
-	public int getCol(){
+	public int getCol() {
 
 		return this.col;
 	}
 
-	public void set(int i, int j, double valor){
+	public void set(int i, int j, double valor) {
 
 		m[i][j] = valor;
 	}
 
-	public double get(int i, int j){
+	public double get(int i, int j) {
 
 		return m[i][j];
 	}
@@ -106,15 +110,14 @@ class Matriz {
 
 	// metodo que imprime as entradas da matriz.
 
-	public void imprime(){
+	public void imprime() {
 
-		for(int i = 0; i < lin; i++){
+		for (int i = 0; i < lin; i++) {
 
-			for(int j = 0; j < col; j++){
+			for (int j = 0; j < col; j++) {
 	
 				System.out.printf("%7.2f ", m[i][j]);
 			}
-
 			System.out.println();
 		}
 	}
@@ -124,18 +127,18 @@ class Matriz {
 	// linha da matriz impressa possui as entradas da linha correspondente da matriz 
 	// que chama o metodo, seguida das entradas da linha correspondente em "agregada".
 
-	public void imprime(Matriz agregada){
+	public void imprime(Matriz agregada) {
 
-		for(int i = 0; i < lin; i++){
+		for (int i = 0; i < lin; i++) {
 
-			for(int j = 0; j < col; j++){
+			for (int j = 0; j < col; j++) {
 	
 				System.out.printf("%7.2f ", m[i][j]);
 			}
 
 			System.out.print(" |");
 
-			for(int j = 0; j < agregada.col; j++){
+			for (int j = 0; j < agregada.col; j++) {
 	
 				System.out.printf("%7.2f ", agregada.m[i][j]);
 			}
@@ -146,11 +149,11 @@ class Matriz {
 
 	// metodo que troca as linhas i1 e i2 de lugar.
 
-	public void trocaLinha(int i1, int i2){
+	public void trocaLinha(int i1, int i2) {
 		
 		double[] aux = new double[getCol()];
 
-		for (int i = 0; i < this.getCol(); i++){
+		for (int i = 0; i < this.getCol(); i++) {
 			aux[i] = this.m[i1][i];
 			this.m[i1][i] = this.m[i2][i];
 			this.m[i2][i] = aux[i];
@@ -159,7 +162,7 @@ class Matriz {
 
 	// metodo que multiplica as entradas da linha i pelo escalar k
 
-	private void multiplicaLinha(int i, double k){
+	private void multiplicaLinha(int i, double k) {
 		
 		for (int cont = 0; cont < this.getCol(); cont++) 	
 			this.m[i][cont] = this.m[i][cont] * k;
@@ -170,7 +173,7 @@ class Matriz {
 	// 	(linha i1) = (linha i1) + (linha i2 * k)
 	//
 
-	private void combinaLinhas(int i1, int i2, double k, int col){
+	private void combinaLinhas(int i1, int i2, double k, int col) {
 
 		for (int cont = col; cont < this.getCol(); cont++)
 			this.m[i1][cont] = this.m[i1][cont] + (this.m[i2][cont] * k);
@@ -242,17 +245,17 @@ class Matriz {
 	// tambem deve calcular e devolver o determinante da matriz que invoca o metodo. Assumimos 
 	// que a matriz que invoca este metodo eh uma matriz quadrada.
 	
-	public double formaEscalonada(Matriz agregada){
+	public double formaEscalonada(Matriz agregada) {
 
 		double resultadoDet = 0;
 		boolean operacaoResolve = false;
 
-		if (agregada != null)
+		if (agregada != null) 
 			operacaoResolve = (agregada.getCol() == 1) ? true : false;
 
-		resultadoDet = calculaDeterminante(this.m, this.m.length);
+		resultadoDet = calculaDeterminante(this.m, this.m.length); 
 
-		if (operacaoResolve || (resultadoDet != 0 && agregada != null)) {
+		if (operacaoResolve || (resultadoDet != 0 && agregada != null)) { // operação "inverte" com determinante = 0, não entrará nesse if
 
 			Matriz matriz = this.getMatrizObj();
 
@@ -290,11 +293,10 @@ class Matriz {
 	// a matriz que invoca esta metodo eh uma matriz quadrada. Não se pode assumir, contudo, que esta
 	// matriz ja esteja na forma escalonada (mas voce pode usar o metodo acima para isso).
 
-	public void formaEscalonadaReduzida(Matriz agregada){
+	public void formaEscalonadaReduzida(Matriz agregada) {
 
 		Matriz matriz = this.getMatrizObj();
 		boolean operacaoResolve = (agregada.getCol() == 1) ? true : false;
-		int lin = 0;
 
 		if (operacaoResolve) {
 
@@ -316,6 +318,7 @@ class Matriz {
 		} else {
 
 			double[][] agregadaInversaTemp = new double[agregada.getLin()][agregada.getCol()];
+			int lin = 0;
 
 			for (int i = agregada.getLin() - 1; i >= 0; i--) {
 			
@@ -339,13 +342,12 @@ class Matriz {
 	}
 }
 
-
-
 public class EP1 {
 
-	public static final boolean DEBUG = false; // um flag para o método constroiMatriz(), pois a execução no modo debug não estava lendo os arquivos 
+	// flag para o método constroiMatriz(), pois a execução no modo debug não estava lendo os arquivos (estou enviando com essa parte, caso queria debuggar)
+	public static final boolean DEBUG = false; 
 	
-	public static void main(String [] args){
+	public static void main(String [] args) {
 	
 		InformacaoDaEntrada resultado = constroiMatriz();
 		Matriz matriz = resultado.getMatriz();
@@ -417,7 +419,7 @@ public class EP1 {
 
 			int lin = 0;
 
-			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada3E.txt"))) {
+			try (BufferedReader br = new BufferedReader(new FileReader("./casos_de_teste/entrada1F.txt"))) {
 
 				String line = br.readLine();
 				
@@ -489,6 +491,7 @@ public class EP1 {
 
 		boolean restoDivisoesIguaisAZero = true;
 		
+		// validação 1: matrizes que contém valores iguais a zero em uma mesma coluna  
 		for (int contCol = 0; contCol < matriz.getCol(); contCol++) {
 
 			boolean colunasIguaisAZero = true;
@@ -529,6 +532,9 @@ public class EP1 {
 			}
 		}
 
+		// validação 2:
+		//   -  "linhas simétricas" (igual ou divisível por outra) com valores na coluna 'n+1' igual ou divisível pelo mesmo fator
+		//   -  "linhas simétricas" (igual ou divisível por outra) com valores na coluna 'n+1' diferente ou não divisível pelo mesmo fator
 		for (double[] linha : matriz.getMatriz()) {
 
 			double[] v1 = linha;
@@ -539,7 +545,7 @@ public class EP1 {
 
 				double[] v2 = outraLinha;
 
-				Sistema sistema = comparaVetor(v1, v2);
+				Sistema sistema = comparaVetor(v1, v2); // método que efetivamente faz a validação e o retorno do enum Sistema 
 
 				if (sistema == Sistema.MuitasSolucoes)
 					return Sistema.MuitasSolucoes;
@@ -551,6 +557,7 @@ public class EP1 {
 		return Sistema.Valido;
 	}
 
+	// método que recebe dois vetores, retornando o enum Sistema, caso as linhas possuam alguma relação
 	public static Sistema comparaVetor(double[] v1, double[] v2) {
 
 		double[] maior = (v1[0] >= v2[0]) ? v1 : v2;
